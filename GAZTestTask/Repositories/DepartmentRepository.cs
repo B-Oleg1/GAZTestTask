@@ -140,7 +140,8 @@ namespace GAZTestTask.Repositories
                                    "" +
                                    "SELECT id, name, parent_department_id AS parentDepartmentId " +
                                    "FROM departments " +
-                                   "WHERE id IN (SELECT id FROM nested_departments) " +
+                                   "WHERE id IN (SELECT id FROM nested_departments) AND " +
+                                   "      id <> @DepartmentId " +
                                    "ORDER BY id ASC;";
 
                     nestedDepartments = await connection.QueryAsync<DepartmentModel>
