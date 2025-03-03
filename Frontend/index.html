@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Структура компании</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .departments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .departments-table th, .departments-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .departments-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .departments-table tr:hover {
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        .details-section {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .details-box {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .details-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .toggle-nested {
+            margin-bottom: 15px;
+        }
+
+        .toggle-nested label {
+            margin-left: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #1565c0;
+        }
+
+        .add-buttons {
+            margin-bottom: 20px;
+        }
+
+        .add-buttons button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Структура компании</h1>
+
+        <div class="add-buttons">
+            <button onclick="showAddDepartmentForm()">Добавить подразделение</button>
+            <button onclick="showAddEmployeeForm()">Добавить сотрудника</button>
+        </div>
+
+        <table class="departments-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Подразделение</th>
+                    <th>Родительское подразделение (ID)</th>
+                </tr>
+            </thead>
+            <tbody id="departmentsBody"></tbody>
+        </table>
+
+        <div class="details-section" id="detailsSection" style="display: none;">
+            <div class="details-box">
+                <h3>Сотрудники (<span id="employeesCount">0</span>)</h3>
+                <div class="toggle-nested">
+                    <input type="checkbox" id="toggleNested" onchange="toggleNestedEmployees()">
+                    <label for="toggleNested">Учитывать вложенные подразделения</label>
+                </div>
+                <ul id="employeesList"></ul>
+            </div>
+
+            <div class="details-box">
+                <h3>Дочерние подразделения (<span id="subDepartmentsCount">0</span>)</h3>
+                <ul id="subDepartmentsList"></ul>
+            </div>
+        </div>
+
+        <div id="employeeModal" class="modal">
+            <div class="modal-content">
+                <h3>Новый сотрудник</h3>
+                <div class="form-group">
+                    <label for="employeeName">ФИО</label>
+                    <input type="text" id="employeeName" placeholder="Введите ФИО">
+                </div>
+                <div class="form-group">
+                    <label for="employeePosition">Должность</label>
+                    <input type="text" id="employeePosition" placeholder="Введите должность">
+                </div>
+                <div class="form-group">
+                    <label for="employeeDepartmentId">ID подразделения (необязательно)</label>
+                    <input type="number" id="employeeDepartmentId" placeholder="Введите ID подразделения">
+                </div>
+                <button onclick="addEmployee()">Добавить</button>
+                <button onclick="closeModals()" style="background: #666; margin-left: 10px;">Отмена</button>
+            </div>
+        </div>
+
+        <div id="departmentModal" class="modal">
+            <div class="modal-content">
+                <h3>Новое подразделение</h3>
+                <div class="form-group">
+                    <label for="departmentName">Название</label>
+                    <input type="text" id="departmentName" placeholder="Введите название">
+                </div>
+                <div class="form-group">
+                    <label for="parentDepartmentId">ID родительского подразделения (необязательно)</label>
+                    <input type="number" id="parentDepartmentId" placeholder="Введите ID родительского подразделения">
+                </div>
+                <button onclick="addDepartment()">Добавить</button>
+                <button onclick="closeModals()" style="background: #666; margin-left: 10px;">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = "http://185.46.8.228:3535";
+        let selectedDepartmentId = null;
+        let withNested = false;
+
+        // Загрузка подразделений при загрузке страницы
+        window.onload = async () => {
+            withNested = document.querySelector('#toggleNested').checked;
+
+            await loadDepartments();
+        };
+
+        // Загрузка списка подразделений
+        async function loadDepartments() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/Departments/All`);
+                const departments = await response.json();
+                renderDepartments(departments);
+            } catch (error) {
+                console.error('Ошибка загрузки подразделений: ', error);
+            }
+        }
+
+        // Отображение подразделений в таблице
+        function renderDepartments(departments) {
+            const tbody = document.getElementById('departmentsBody');
+            tbody.innerHTML = ''; // Очищаем таблицу перед добавлением новых данных
+
+            departments.forEach(dept => {
+                const row = document.createElement('tr');
+                row.onclick = () => selectDepartment(dept.id);
+
+                const idCell = document.createElement('td');
+                idCell.textContent = dept.id;
+                row.appendChild(idCell);
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = dept.name;
+                row.appendChild(nameCell);
+
+                const parentCell = document.createElement('td');
+                parentCell.textContent = dept.parentDepartmentId || 'Нет';
+                row.appendChild(parentCell);
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Выбор подразделения
+        async function selectDepartment(departmentId) {
+            selectedDepartmentId = departmentId;
+            document.getElementById('detailsSection').style.display = 'flex';
+            await loadDepartmentDetails();
+        }
+
+        // Загрузка данных о выбранном подразделении
+        async function loadDepartmentDetails() {
+            try {
+                const [employees, subDepartments] = await Promise.all([
+                    fetch(`${BASE_URL}/api/Departments/${selectedDepartmentId}/Employees?withNested=${withNested}`).then(r => r.json()),
+                    fetch(`${BASE_URL}/api/Departments/${selectedDepartmentId}/Subdepartments`).then(r => r.json())
+                ]);
+
+                renderEmployees(employees);
+                renderSubDepartments(subDepartments);
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+            }
+        }
+
+        // Переключение режима отображения сотрудников (с вложенными или без)
+        function toggleNestedEmployees() {
+            withNested = document.getElementById('toggleNested').checked;
+            loadDepartmentDetails();
+        }
+
+        // Отображение сотрудников
+        function renderEmployees(employees) {
+            const list = document.getElementById('employeesList');
+            list.innerHTML = ''; // Очищаем список перед добавлением новых данных
+
+            employees.forEach(emp => {
+                const li = document.createElement('li');
+                li.textContent = `Id: ${emp.id} | Name: ${emp.name} | Position: ${emp.position} | DepartmentId: ${emp.departmentId}`;
+                list.appendChild(li);
+            });
+
+            document.getElementById('employeesCount').textContent = employees.length;
+        }
+
+        // Отображение дочерних подразделений
+        function renderSubDepartments(subDepartments) {
+            const list = document.getElementById('subDepartmentsList');
+            list.innerHTML = ''; // Очищаем список перед добавлением новых данных
+
+            subDepartments.forEach(dept => {
+                const li = document.createElement('li');
+                li.textContent = `Id: ${dept.id} | Name: ${dept.name} | ParentDepartmentId: ${dept.parentDepartmentId || 'Нет'}`;
+                list.appendChild(li);
+            });
+
+            document.getElementById('subDepartmentsCount').textContent = subDepartments.length;
+        }
+
+        // Показать форму добавления сотрудника
+        function showAddEmployeeForm() {
+            document.getElementById('employeeModal').style.display = 'flex';
+        }
+
+        // Показать форму добавления подразделения
+        function showAddDepartmentForm() {
+            document.getElementById('departmentModal').style.display = 'flex';
+        }
+
+        // Закрыть модальные окна
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+
+        // Добавление сотрудника
+        async function addEmployee() {
+            const name = document.getElementById('employeeName').value;
+            const position = document.getElementById('employeePosition').value;
+            const departmentId = document.getElementById('employeeDepartmentId').value;
+
+            if (!name || !position) {
+                alert('Заполните ФИО и должность');
+                return;
+            }
+
+            try {
+                await fetch(`${BASE_URL}/api/Employees`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        position,
+                        departmentId: departmentId || null
+                    })
+                });
+                
+                closeModals();
+                if (selectedDepartmentId) {
+                    await loadDepartmentDetails();
+                }
+            } catch (error) {
+                console.error('Ошибка добавления сотрудника:', error);
+            }
+        }
+
+        // Добавление подразделения
+        async function addDepartment() {
+            const name = document.getElementById('departmentName').value;
+            const parentDepartmentId = document.getElementById('parentDepartmentId').value;
+
+            if (!name) {
+                alert('Введите название подразделения');
+                return;
+            }
+
+            try {
+                await fetch(`${BASE_URL}/api/Departments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        parentDepartmentId: parentDepartmentId || null
+                    })
+                });
+                
+                closeModals();
+                await loadDepartments();
+            } catch (error) {
+                console.error('Ошибка добавления подразделения:', error);
+            }
+        }
+    </script>
+</body>
+</html>
