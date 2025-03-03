@@ -133,15 +133,14 @@ namespace GAZTestTask.Repositories
 
                     string query = "WITH RECURSIVE nested_departments AS ( " +
                                    "    SELECT id FROM departments WHERE id = @DepartmentId " +
-                                   "    UNION ALL " +
+                                   "    UNION " +
                                    "    SELECT d.id FROM departments d " +
                                    "    INNER JOIN nested_departments nd ON d.parent_department_id = nd.id" +
                                    ") " +
                                    "" +
                                    "SELECT id, name, parent_department_id AS parentDepartmentId " +
                                    "FROM departments " +
-                                   "WHERE id IN (SELECT id FROM nested_departments) AND " +
-                                   "      id <> @DepartmentId " +
+                                   "WHERE id IN (SELECT id FROM nested_departments) " +
                                    "ORDER BY id ASC;";
 
                     nestedDepartments = await connection.QueryAsync<DepartmentModel>
