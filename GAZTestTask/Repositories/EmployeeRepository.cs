@@ -145,7 +145,11 @@ namespace GAZTestTask.Repositories
 
                     countRows = await connection.QueryFirstOrDefaultAsync<long>
                     (
-                        query
+                        query,
+                        new
+                        {
+                            DepartmentId = departmentId
+                        }
                     );
                 }
             }
@@ -173,7 +177,7 @@ namespace GAZTestTask.Repositories
 
                     string query = "WITH RECURSIVE nested_departments AS ( " +
                                    "    SELECT id FROM departments WHERE id = @DepartmentId " +
-                                   "    UNION ALL " +
+                                   "    UNION " +
                                    "    SELECT d.id FROM departments d " +
                                    "    INNER JOIN nested_departments nd ON d.parent_department_id = nd.id" +
                                    ") " +
@@ -217,7 +221,7 @@ namespace GAZTestTask.Repositories
 
                     string query = "WITH RECURSIVE nested_departments AS ( " +
                                    "    SELECT id FROM departments WHERE id = @DepartmentId " +
-                                   "    UNION ALL " +
+                                   "    UNION " +
                                    "    SELECT d.id FROM departments d " +
                                    "    INNER JOIN nested_departments nd ON d.parent_department_id = nd.id" +
                                    ") " +
@@ -228,7 +232,11 @@ namespace GAZTestTask.Repositories
 
                     countRows = await connection.QueryFirstOrDefaultAsync<long>
                     (
-                        query
+                        query,
+                        new
+                        {
+                            DepartmentId = departmentId
+                        }
                     );
                 }
             }
