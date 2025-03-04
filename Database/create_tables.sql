@@ -16,3 +16,4 @@ ALTER TABLE departments ADD CONSTRAINT "parent_department_id__foreign" FOREIGN K
 ALTER TABLE employees ADD CONSTRAINT "department_id__foreign" FOREIGN KEY (department_id) REFERENCES departments (id) ON DELETE SET NULL;
 
 CREATE INDEX departments__parent_department_id__index ON departments (parent_department_id);
+CREATE INDEX employees__department_id__index ON employees (department_id);
